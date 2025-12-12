@@ -3,6 +3,8 @@ package com.example.expenseTracker.entity;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,35 +15,33 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Data
+@Getter
+@Setter
+
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="users")
-
+@Table(name = "users")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserInfo {
-	
+
 	@Id
-	@Column(name="user_id")
+	@Column(name = "user_id")
 	private String userId;
 	private String username;
 	private String password;
-	@ManyToMany(fetch=FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(
-			
-			name= "users_roles",
-			joinColumns=@JoinColumn(name="user_id"),
-			inverseJoinColumns=@JoinColumn(name="role_id")
-			
-			
-			
-			)
-	
-	private Set<UserRoles> roles= new HashSet<>();
-	
-	 
-	
+
+			name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id")
+
+	)
+
+	private Set<UserRoles> roles = new HashSet<>();
 
 }

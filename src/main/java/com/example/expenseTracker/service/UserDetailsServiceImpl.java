@@ -14,8 +14,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.example.expenseTracker.entity.UserInfo;
+import com.example.expenseTracker.eventProducer.UserInfoEvent;
+import com.example.expenseTracker.eventProducer.UserInfoProducer;
 import com.example.expenseTracker.model.UserInfoDto;
 import com.example.expenseTracker.repository.UserRepository;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,6 +35,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	private final UserRepository userRepository;
 	@Autowired
 	private final PasswordEncoder passwordEncoder;
+	@Autowired
+	private final UserInfoProducer userInfoProducer;
 //	private static final Logger log= LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
 	@Override
@@ -61,10 +66,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		}
 
 		String userId = UUID.randomUUID().toString();
-		userRepository
-				.save(new UserInfo(userId, userInfoDto.getUsername(), userInfoDto.getPassword(), new HashSet<>()));
+		UserInfo userInfo=new UserInfo(userId,userInfoDto.getUsername(),userInfoDto.getPassword(),new HashSet<>());
+	userRepository.save(userInfo);
+	
+//		userRepository
+//				.save(new UserInfo(	userId, userInfoDto.getUsername(), userInfoDto.getPassword(), new HashSet<>()));
 		// pushEventToQueue
+		userInfoProducer.sendEventToKafka(userInfoEventToPublish(userInfoDto,userId));	
 		return true;
 	}
-
+	private UserInfoEvent userInfoEventToPublish(UserInfoDto userInfoDto, String userId)
+	{
+		return UserInfoEvent.builder()
+				.userId(userId).
+				firstName(userInfoDto.getUsername()).
+				lastName(userInfoDto.getLastName())
+				.email(userInfoDto.getEmail())
+				.phoneNumber(userInfoDto.getPhoneNumber()).build();
+	}
 }
