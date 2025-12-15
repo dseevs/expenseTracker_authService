@@ -4,9 +4,10 @@ import java.util.Map;
 
 import org.apache.kafka.common.serialization.Serializer;
 
+import com.example.expenseTracker.eventProducer.UserInfoEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import eventProducer.UserInfoEvent;
+
 
 public class UserInfoSerializer implements Serializer<UserInfoEvent>{	
 	

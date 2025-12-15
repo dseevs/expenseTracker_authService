@@ -61,13 +61,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	public Boolean signupUser(UserInfoDto userInfoDto) {
 		/// ToDo ValidationUtil.validateUserAtributes(userInfoDto)
 		userInfoDto.setPassword(passwordEncoder.encode(userInfoDto.getPassword()));
-		if (Objects.nonNull(checkIfUserAlreadyExist(userInfoDto))) {
-			return false;
-		}
+//		if (Objects.nonNull(checkIfUserAlreadyExist(userInfoDto))) {
+//			return false;
+//		}
 
 		String userId = UUID.randomUUID().toString();
 		UserInfo userInfo=new UserInfo(userId,userInfoDto.getUsername(),userInfoDto.getPassword(),new HashSet<>());
-	userRepository.save(userInfo);
+	//userRepository.save(userInfo);
 	
 //		userRepository
 //				.save(new UserInfo(	userId, userInfoDto.getUsername(), userInfoDto.getPassword(), new HashSet<>()));

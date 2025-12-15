@@ -1,8 +1,5 @@
 package com.example.expenseTracker.auth;
 
-
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.expenseTracker.eventProducer.UserInfoProducer;
 import com.example.expenseTracker.repository.UserRepository;
 import com.example.expenseTracker.service.UserDetailsServiceImpl;
 
@@ -31,49 +29,43 @@ import lombok.Data;
 @Data
 public class SecurityConfig {
 
-	
 	@Autowired
 	private final PasswordEncoder passwordEncoder;
-	
+
 	@Autowired
 	private final UserDetailsServiceImpl userDetailsServiceImpl;
-	
-	
-	
-	public UserDetailsService userDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder)
-	{
-		return new UserDetailsServiceImpl(userRepository, passwordEncoder);
+	  @Autowired
+	    private final UserInfoProducer userInfoProducer;
+
+	public UserDetailsService userDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+		return new UserDetailsServiceImpl(userRepository, passwordEncoder, userInfoProducer);
 	}
-	
-	   @Bean
-	    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
 
-	        return http
-	                .csrf(AbstractHttpConfigurer::disable).cors(CorsConfigurer::disable)
-	                .authorizeHttpRequests(auth -> auth
-	                        .requestMatchers("/auth/v1/login", "/auth/v1/refreshToken", "/auth/v1/signup").permitAll()
-	                        .anyRequest().authenticated()
-	                )
-	                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-	                .httpBasic(Customizer.withDefaults())
-	                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-	                .authenticationProvider(authenticationProvider())
-	                .build();
-	    }
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
 
-	    @Bean
-	    public AuthenticationProvider authenticationProvider() {
-	        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-	        authenticationProvider.setUserDetailsService(userDetailsServiceImpl);
-	        authenticationProvider.setPasswordEncoder(passwordEncoder);
-	        return authenticationProvider;
+		return http.csrf(AbstractHttpConfigurer::disable).cors(CorsConfigurer::disable)
+				.authorizeHttpRequests(
+						auth -> auth.requestMatchers("/auth/v1/login", "/auth/v1/refreshToken", "/auth/v1/signup")
+								.permitAll().anyRequest().authenticated())
+				.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.httpBasic(Customizer.withDefaults())
+				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+				.authenticationProvider(authenticationProvider()).build();
+	}
 
-	    }
+	@Bean
+	public AuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+		authenticationProvider.setUserDetailsService(userDetailsServiceImpl);
+		authenticationProvider.setPasswordEncoder(passwordEncoder);
+		return authenticationProvider;
 
-	    @Bean
-	    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-	        return config.getAuthenticationManager();
-	    }
-	
-	
+	}
+
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+		return config.getAuthenticationManager();
+	}
+
 }
